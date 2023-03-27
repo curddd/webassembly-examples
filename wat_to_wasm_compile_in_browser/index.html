@@ -1,0 +1,68 @@
+<!doctype html>
+
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>WASM Load And Compile</title>
+        <pool id="bath"></pool>
+
+        <script>
+
+            function benchmark() {
+                let start = Date.now();
+                for (let i = 0; i < 999999999; i++) {
+                    i = i * (1 + Math.random())
+                }
+                console.log(Date.now() - start);
+            }
+
+            function pool_add(pool_id, src, callback) {
+                var script = document.createElement('script');
+                script.type = "text/javascript";
+                script.addEventListener("load", (event) => {
+                    console.log("script loaded :)");
+                    callback(script.innerHTML);
+                });
+                script.src = src;
+                document.getElementById('bath').appendChild(script);
+            }
+
+
+            let imports = {
+                test_one: () => {
+                    benchmark();
+                },
+                test_two: () => {
+
+                    let start = Date.now();
+                    for (let i = 0; i < 999999999; i++) {
+                        i = i * (1 + Math.random())
+                    }
+                    console.log(Date.now() - start);
+                }
+            }
+            imports = {
+                imports: imports
+            };
+
+			console.log(imports);
+			let tbl = WebAssembly.Table();
+
+			imports.imports['table'] = tbl;
+
+            WebAssembly.instantiateStreaming(fetch('./empty.wasm'), imports).then((inst) => {
+                console.log(WebAssembly.Module.imports(inst)[0]);
+                WebAssembly.Module.imports(inst)[0].call();
+                console.log(WebAssembly.Module.imports(inst)[1]);
+                WebAssembly.Module.imports(inst)[1].call();
+
+				
+            })
+        </script>
+
+    </head>
+
+    <body></body>
+
+</html>
